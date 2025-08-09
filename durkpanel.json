@@ -1,59 +1,41 @@
 {
   "__inputs": [
     {
-      "name": "DS_TEST",
-      "label": "test",
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
       "description": "",
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
     },
     {
-      "name": "DS_GRAFANA-POSTGRESQL-DATASOURCE",
-      "label": "grafana-postgresql-datasource",
+      "name": "DS_LRP_DATABASE",
+      "label": "LRP Database",
       "description": "",
       "type": "datasource",
       "pluginId": "grafana-postgresql-datasource",
       "pluginName": "PostgreSQL"
-    },
-    {
-      "name": "DS_EXPRESSION",
-      "label": "Expression",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "__expr__"
     }
   ],
   "__elements": {},
   "__requires": [
     {
-      "type": "datasource",
-      "id": "__expr__",
-      "version": "1.0.0"
+      "type": "panel",
+      "id": "barchart",
+      "name": "Bar chart",
+      "version": ""
     },
     {
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "11.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "grafana-clock-panel",
-      "name": "Clock",
-      "version": "2.1.7"
+      "version": "11.5.1"
     },
     {
       "type": "datasource",
       "id": "grafana-postgresql-datasource",
       "name": "PostgreSQL",
       "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "piechart",
-      "name": "Pie chart",
-      "version": ""
     },
     {
       "type": "datasource",
@@ -109,9 +91,10 @@
       {
         "datasource": {
           "type": "grafana-postgresql-datasource",
-          "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+          "uid": "${DS_LRP_DATABASE}"
         },
-        "enable": true,
+        "enable": false,
+        "hide": false,
         "iconColor": "green",
         "mappings": {
           "id": {
@@ -166,12 +149,13 @@
       "title": "Adjust Time Range",
       "tooltip": "",
       "type": "link",
-      "url": "https://grafana.networkgamez.com/d/K0LTdKmMk/goob-server?orgId=1&from=${start_date}&to=${end_date}"
+      "url": "http://goobstation.simplestation.org:25512/d/K0LTdKmMk/goob-server?orgId=1&from=${start_date}&to=${end_date}"
     }
   ],
   "liveNow": true,
   "panels": [
     {
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -179,17 +163,14 @@
         "y": 0
       },
       "id": 65,
+      "panels": [],
       "title": "Live Stats",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_TEST}"
-      },
       "description": "",
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 1
@@ -201,18 +182,14 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<img src=\"https://github.com/Goob-Station/goobsite/blob/main/src/assets/images/banner.png?raw=true\" style=\"object-fit: fill;\">",
+        "content": "<img src=\"https://raw.githubusercontent.com/Goob-Station/Goob-Station/ff1f0468b110ccd441e65f70b046633a165848c3/Resources/Textures/Logo/logo.svg\" style=\"object-fit: fill;\">",
         "mode": "html"
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "transparent": true,
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_TEST}"
-      },
       "description": "",
       "gridPos": {
         "h": 3,
@@ -230,14 +207,14 @@
         "content": " \r\n<p style=\"text-align: center; font-size: 60px;\">Player Count</p>",
         "mode": "html"
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "transparent": true,
       "type": "text"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -253,6 +230,7 @@
             "axisLabel": "",
             "axisPlacement": "right",
             "barAlignment": 1,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 40,
             "gradientMode": "scheme",
@@ -285,7 +263,6 @@
           "displayName": "Players",
           "links": [],
           "mappings": [],
-          "max": 250,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -300,7 +277,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 5,
         "w": 8,
         "x": 16,
         "y": 1
@@ -317,17 +294,18 @@
           "browser"
         ],
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
           "expr": "robust_player_count",
@@ -336,13 +314,34 @@
           "refId": "A"
         }
       ],
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"alpha.goobstation.com:443\", job=\"goob_alpha\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"aurum.goobstation.com:443\", job=\"goob_aurum\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"beta.goobstation.com:443\", job=\"goob_beta\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"omega.goobstation.com:443\", job=\"goob_omega\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"regalis.goobstation.com:443\", job=\"goob_regalis\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"sigma.goobstation.com:443\", job=\"goob_sigma\"}",
+                "robust_player_count {__name__=\"robust_player_count\", instance=\"82.21.190.34:25510\", job=\"goob_test\"}"
+              ],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
       "transparent": true,
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -378,6 +377,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "max"
@@ -392,12 +392,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
           "exemplar": false,
@@ -411,13 +411,26 @@
         }
       ],
       "title": " ",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -454,6 +467,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "mean"
@@ -468,12 +482,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
           "exemplar": false,
@@ -487,13 +501,26 @@
         }
       ],
       "title": " ",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -529,6 +556,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "min"
@@ -543,12 +571,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
           "exemplar": false,
@@ -562,13 +590,26 @@
         }
       ],
       "title": " ",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -604,6 +645,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -618,12 +660,12 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
           "exemplar": false,
@@ -637,42 +679,43 @@
         }
       ],
       "title": " ",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "continuous-RdYlGr"
           },
-          "decimals": 0,
-          "displayName": "Admins \nOnline",
-          "fieldMinMax": false,
+          "displayName": "Queue",
           "mappings": [],
+          "max": 250,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "yellow",
-                "value": 2
-              },
-              {
                 "color": "green",
-                "value": 3
+                "value": null
               }
             ]
           }
@@ -685,15 +728,16 @@
         "x": 14,
         "y": 4
       },
-      "id": 61,
+      "id": 74,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -702,39 +746,59 @@
         "text": {
           "valueSize": 60
         },
-        "textMode": "value_and_name",
+        "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
-          "editorMode": "code",
+          "disableTextWrap": false,
+          "editorMode": "builder",
           "exemplar": false,
-          "expr": "ss14_adminmanager_admins_online_count{state=\"active\"}",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
+          "expr": "join_queue_total_count",
+          "format": "time_series",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{server}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "join_queue_total_count {__name__=\"join_queue_total_count\", instance=\"82.21.190.34:25510\", job=\"goob_test\"}",
+                "join_queue_total_count {__name__=\"join_queue_total_count\", instance=\"alpha.goobstation.com:443\", job=\"goob_alpha\"}",
+                "join_queue_total_count {__name__=\"join_queue_total_count\", instance=\"beta.goobstation.com:443\", job=\"goob_beta\"}",
+                "join_queue_total_count {__name__=\"join_queue_total_count\", instance=\"omega.goobstation.com:443\", job=\"goob_omega\"}",
+                "join_queue_total_count {__name__=\"join_queue_total_count\", instance=\"sigma.goobstation.com:443\", job=\"goob_sigma\"}"
+              ],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
         }
       ],
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
       "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 6,
         "x": 0,
-        "y": 6
+        "y": 5
       },
       "id": 29,
       "options": {
@@ -785,14 +849,151 @@
           "zoneFormat": "offsetAbbv"
         }
       },
-      "pluginVersion": "2.1.7",
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
       "transparent": true,
       "type": "grafana-clock-panel"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "barAlignment": 1,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 40,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 1200000,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "displayName": "Players",
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "id": 73,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "timezone": [
+          "browser"
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "join_queue_total_count{}",
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "{__name__=\"join_queue_total_count\", instance=\"82.21.190.34:25510\", job=\"goob_test\"}",
+                "{__name__=\"join_queue_total_count\", instance=\"alpha.goobstation.com:443\", job=\"goob_alpha\"}",
+                "{__name__=\"join_queue_total_count\", instance=\"beta.goobstation.com:443\", job=\"goob_beta\"}",
+                "{__name__=\"join_queue_total_count\", instance=\"omega.goobstation.com:443\", job=\"goob_omega\"}",
+                "{__name__=\"join_queue_total_count\", instance=\"sigma.goobstation.com:443\", job=\"goob_sigma\"}"
+              ],
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -800,7 +1001,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Current Round Length:",
+          "displayName": "Shortest Round Length:",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -822,42 +1023,47 @@
         "x": 0,
         "y": 9
       },
-      "id": 43,
+      "id": 53,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "logmin"
           ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "text": {
-          "valueSize": 50
-        },
+        "text": {},
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
           "expr": "ss14_round_length",
           "format": "time_series",
-          "instant": true,
-          "interval": "1s",
+          "instant": false,
+          "interval": "",
           "legendFormat": "{{server}}",
-          "range": false,
+          "range": true,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
         }
       ],
       "type": "stat"
@@ -865,7 +1071,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -900,6 +1106,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -911,12 +1118,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -992,7 +1199,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1027,6 +1234,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1041,12 +1249,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1093,7 +1301,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1162,12 +1370,12 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1224,7 +1432,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1320,12 +1528,12 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1382,7 +1590,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -1390,7 +1598,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Shortest Round Length:",
+          "displayName": "Average Round Length:",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -1407,20 +1615,21 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 2,
+        "h": 3,
         "w": 6,
         "x": 0,
         "y": 12
       },
-      "id": 53,
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "logmin"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -1430,22 +1639,28 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "ss14_round_length",
+          "expr": "$__range_s / increase(ss14_round_number[$__range])",
           "format": "time_series",
-          "instant": false,
+          "instant": true,
           "interval": "",
           "legendFormat": "{{server}}",
-          "range": true,
+          "range": false,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
         }
       ],
       "type": "stat"
@@ -1453,7 +1668,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1488,6 +1703,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1499,12 +1715,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1580,7 +1796,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1614,6 +1830,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1628,12 +1845,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1680,7 +1897,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -1688,7 +1905,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Average Round Length:",
+          "displayName": "Longest Round Length:",
           "mappings": [],
           "min": 0,
           "thresholds": {
@@ -1705,20 +1922,21 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 2,
+        "h": 3,
         "w": 6,
         "x": 0,
-        "y": 14
+        "y": 15
       },
-      "id": 24,
+      "id": 52,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "max"
           ],
           "fields": "",
           "values": false
@@ -1728,22 +1946,28 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "$__range_s / increase(ss14_round_number[$__range])",
+          "expr": "ss14_round_length",
           "format": "time_series",
-          "instant": true,
+          "instant": false,
           "interval": "",
           "legendFormat": "{{server}}",
-          "range": false,
+          "range": true,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
         }
       ],
       "type": "stat"
@@ -1751,7 +1975,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1786,6 +2010,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1797,12 +2022,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1878,7 +2103,7 @@
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -1913,6 +2138,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1927,12 +2153,12 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -1979,78 +2205,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "displayName": "Longest Round Length:",
-          "mappings": [],
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "dthms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 6,
-        "x": 0,
-        "y": 16
-      },
-      "id": 52,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "max"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "value_and_name",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_TEST}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "ss14_round_length",
-          "format": "time_series",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "{{server}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -2068,6 +2223,7 @@
             "axisSoftMax": 30,
             "axisSoftMin": 0,
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "scheme",
@@ -2131,17 +2287,18 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -2158,7 +2315,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2173,6 +2330,7 @@
             "axisLabel": "",
             "axisPlacement": "right",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "scheme",
@@ -2234,17 +2392,18 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -2261,7 +2420,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2275,116 +2434,10 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "right",
-            "axisSoftMax": 8,
+            "axisSoftMax": 8000000000,
             "axisSoftMin": 0,
             "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "decimals": 0,
-          "displayName": "CPU Usage",
-          "fieldMinMax": true,
-          "links": [],
-          "mappings": [],
-          "max": 8,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 8,
-        "y": 18
-      },
-      "id": 35,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.2.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_TEST}"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "rate(process_cpu_seconds_total[$__rate_interval])",
-          "interval": "",
-          "legendFormat": "{{server}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "CPU Usage",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_TEST}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd",
-            "seriesBy": "min"
-          },
-          "custom": {
-            "axisBorderShow": true,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "right",
-            "axisSoftMax": 16000000000,
-            "axisSoftMin": 0,
-            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "scheme",
@@ -2436,7 +2489,7 @@
       "gridPos": {
         "h": 7,
         "w": 4,
-        "x": 12,
+        "x": 8,
         "y": 18
       },
       "id": 36,
@@ -2448,17 +2501,18 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -2475,7 +2529,116 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "axisSoftMax": 8,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "decimals": 0,
+          "displayName": "CPU Usage",
+          "fieldMinMax": true,
+          "links": [],
+          "mappings": [],
+          "max": 8,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 12,
+        "y": 18
+      },
+      "id": 35,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "rate(process_cpu_seconds_total[$__rate_interval])",
+          "interval": "",
+          "legendFormat": "{{server}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2491,6 +2654,7 @@
             "axisPlacement": "right",
             "axisSoftMin": 0,
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "scheme",
@@ -2544,7 +2708,7 @@
         "x": 16,
         "y": 18
       },
-      "id": 40,
+      "id": 39,
       "options": {
         "legend": {
           "calcs": [],
@@ -2553,22 +2717,23 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "rate(robust_net_recv_bytes[$__rate_interval])",
+          "expr": "rate(robust_net_sent_bytes[$__rate_interval])",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -2576,17 +2741,17 @@
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "Inbound",
+          "refId": "Outbound",
           "useBackend": false
         }
       ],
-      "title": "Incoming Traffic",
+      "title": "Outgoing Traffic",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_TEST}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2602,6 +2767,7 @@
             "axisPlacement": "right",
             "axisSoftMin": 0,
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "scheme",
@@ -2655,7 +2821,7 @@
         "x": 20,
         "y": 18
       },
-      "id": 39,
+      "id": 40,
       "options": {
         "legend": {
           "calcs": [],
@@ -2664,22 +2830,23 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_TEST}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "rate(robust_net_sent_bytes[$__rate_interval])",
+          "expr": "rate(robust_net_recv_bytes[$__rate_interval])",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -2687,120 +2854,17 @@
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "Outbound",
+          "refId": "Inbound",
           "useBackend": false
         }
       ],
-      "title": "Outgoing Traffic",
+      "title": "Incoming Traffic",
       "type": "timeseries"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_TEST}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 2,
-          "fieldMinMax": false,
-          "links": [],
-          "mappings": [],
-          "max": 1,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percentunit"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "wizards_den_eu_west"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 0,
-        "y": 25
-      },
-      "id": 38,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "/^B \\{__name__=\"robust_server_uptime\", instance=\"noda\\.avesmaximus\\.eu:4053\", job=\"Goob_one\"\\}$/",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_TEST}"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "robust_server_uptime",
-          "format": "time_series",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{server}}",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "__expr__",
-            "uid": "${DS_EXPRESSION}"
-          },
-          "expression": "$A > 50",
-          "hide": false,
-          "refId": "B",
-          "type": "math"
-        }
-      ],
-      "title": "Server Uptime",
-      "type": "stat"
-    },
-    {
-      "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2815,6 +2879,7 @@
             "axisLabel": "",
             "axisPlacement": "right",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 12,
             "gradientMode": "scheme",
@@ -2864,7 +2929,7 @@
       "gridPos": {
         "h": 7,
         "w": 4,
-        "x": 4,
+        "x": 0,
         "y": 25
       },
       "id": 69,
@@ -2876,17 +2941,18 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "maxHeight": 600,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
@@ -2959,22 +3025,541 @@
       "type": "timeseries"
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 32
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
       },
-      "id": 64,
-      "panels": [],
-      "title": "All Time Stats",
-      "type": "row"
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "axisSoftMax": 8000000000,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 3600000,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "decimals": 0,
+          "fieldMinMax": true,
+          "links": [],
+          "mappings": [],
+          "max": 500000,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sum(rate(npgsql_db_client_commands_bytes_written[1m0s]))"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Write"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu",
+                  "seriesBy": "last"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sum(rate(npgsql_db_client_commands_bytes_read[1m0s]))"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Read"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-RdYlGr"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 4,
+        "y": 25
+      },
+      "id": 72,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "builder",
+          "exemplar": true,
+          "expr": "sum(rate(npgsql_db_client_commands_bytes_written[$__rate_interval]))",
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "Write"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "sum(rate(npgsql_db_client_commands_bytes_read[$__rate_interval]))",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "Read",
+          "useBackend": false
+        }
+      ],
+      "title": "Database",
+      "type": "timeseries"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 3600000,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "decimals": 0,
+          "displayName": "Message Count",
+          "fieldMinMax": false,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "Messages"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 8,
+        "y": 25
+      },
+      "id": 77,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "timezone": [
+          "browser"
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  -- Group by hour using the message's timestamp\r\n  date_trunc('hour', date) AS time,\r\n  COUNT(*) AS message_count\r\nFROM admin_log\r\nWHERE\r\n  ($__timeFilter(date) AND\r\n  (message LIKE 'Whisper from%' OR message LIKE 'Say from%'))\r\nGROUP BY time\r\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "admin_log"
+        }
+      ],
+      "title": "Message Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "decimals": 0,
+          "displayName": "Character Count",
+          "fieldMinMax": false,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "Characters"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 12,
+        "y": 25
+      },
+      "id": 79,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "timezone": [
+          "browser"
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  date_trunc('hour', date) AS time,\r\n  SUM(\r\n    CASE \r\n      WHEN POSITION('transformed: ' IN message) > 0 THEN \r\n        LENGTH(SUBSTRING(message FROM POSITION('transformed: ' IN message) + 13))\r\n      ELSE \r\n        LENGTH(SUBSTRING(message FROM POSITION(': ' IN message) + 2))\r\n    END\r\n  ) AS character_count\r\nFROM admin_log\r\nWHERE\r\n  $__timeFilter(date) AND\r\n  (message LIKE 'Whisper from%' OR message LIKE 'Say from%')\r\nGROUP BY time\r\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "admin_log"
+        }
+      ],
+      "title": "Character Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "decimals": 0,
+          "displayName": "Character Count",
+          "fieldMinMax": false,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "Characters"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 16,
+        "y": 25
+      },
+      "id": 80,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "timezone": [
+          "browser"
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  date_trunc('hour', date) AS time,\r\n  AVG(\r\n    CASE \r\n      WHEN POSITION('transformed: ' IN message) > 0 THEN \r\n        LENGTH(SUBSTRING(message FROM POSITION('transformed: ' IN message) + 13))\r\n      ELSE \r\n        LENGTH(SUBSTRING(message FROM POSITION(': ' IN message) + 2))\r\n    END\r\n  ) AS avg_characters_per_message\r\nFROM admin_log\r\nWHERE\r\n  $__timeFilter(date) AND\r\n  (message LIKE 'Whisper from%' OR message LIKE 'Say from%')\r\nGROUP BY time\r\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "admin_log"
+        }
+      ],
+      "title": "Average Character Count Per Message",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -2984,14 +3569,41 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "fieldMinMax": false,
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": [
           {
@@ -3007,16 +3619,7 @@
                 "readOnly": true
               }
             },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
+            "properties": []
           }
         ]
       },
@@ -3024,42 +3627,43 @@
         "h": 9,
         "w": 3,
         "x": 0,
-        "y": 33
+        "y": 32
       },
       "id": 58,
       "options": {
-        "displayLabels": [],
+        "barRadius": 0.1,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
+          "showLegend": false
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "/^Amount$/",
-          "values": true
-        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
         "tooltip": {
-          "maxHeight": 600,
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "format": "table",
           "hide": false,
-          "rawSql": "SELECT COUNT(*) AS \"Amount\", species AS \"Species\" FROM profile GROUP BY species ORDER BY COUNT(*) DESC ",
+          "rawQuery": true,
+          "rawSql": "WITH player_playtime AS (\n    SELECT\n        play_time.player_id\n    FROM\n        play_time\n    WHERE\n        play_time.tracker = 'Overall'\n        AND play_time.time_spent > '10:00:00'\n)\nSELECT\n    COUNT(*) AS \"Amount\",\n    profile.species AS \"Species\"\nFROM\n    profile\nJOIN\n    preference ON profile.preference_id = preference.preference_id\nJOIN\n    player_playtime ON preference.user_id = player_playtime.player_id\nJOIN\n    player ON preference.user_id = player.user_id\nWHERE\n    $__timeFilter(player.last_seen_time)\nGROUP BY\n    profile.species\nORDER BY\n    \"Amount\" DESC;\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -3106,12 +3710,12 @@
           "table": "profile"
         }
       ],
-      "type": "piechart"
+      "type": "barchart"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -3120,14 +3724,41 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "mappings": [],
-          "min": 0
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -3135,42 +3766,43 @@
         "h": 9,
         "w": 3,
         "x": 3,
-        "y": 33
+        "y": 32
       },
       "id": 48,
       "options": {
-        "displayLabels": [],
+        "barRadius": 0.1,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
+          "showLegend": false
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "/^Amount$/",
-          "values": true
-        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
         "tooltip": {
-          "maxHeight": 600,
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "format": "table",
           "hide": false,
-          "rawSql": "SELECT COUNT(*) AS \"Amount\", sex AS \"Sex\" FROM profile GROUP BY sex ",
+          "rawQuery": true,
+          "rawSql": "WITH player_playtime AS (\n    SELECT\n        play_time.player_id\n    FROM\n        play_time\n    WHERE\n        play_time.tracker = 'Overall'\n        AND play_time.time_spent > '10:00:00'\n)\nSELECT\n    COUNT(*) AS \"Amount\",\n    profile.sex AS \"Sex\"\nFROM\n    profile\nJOIN\n    preference ON profile.preference_id = preference.preference_id\nJOIN\n    player_playtime ON preference.user_id = player_playtime.player_id\nJOIN\n    player ON preference.user_id = player.user_id\nWHERE\n    $__timeFilter(player.last_seen_time)\nGROUP BY\n    profile.sex\nORDER BY\n    \"Amount\" DESC;\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -3209,12 +3841,12 @@
           "table": "profile"
         }
       ],
-      "type": "piechart"
+      "type": "barchart"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -3223,15 +3855,41 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "mappings": [],
           "min": 0,
-          "unit": "Years"
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": [
           {
@@ -3247,16 +3905,7 @@
                 "readOnly": true
               }
             },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                }
-              }
-            ]
+            "properties": []
           }
         ]
       },
@@ -3264,43 +3913,43 @@
         "h": 9,
         "w": 3,
         "x": 6,
-        "y": 33
+        "y": 32
       },
       "id": 49,
       "options": {
-        "displayLabels": [],
+        "barRadius": 0.1,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
+          "showLegend": false
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": true
-        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
         "tooltip": {
-          "maxHeight": 600,
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
           "editorMode": "code",
           "format": "table",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  CASE\r\n    WHEN age < 20 THEN 'Under 20'\r\n    WHEN age >= 20 AND age < 30 THEN '20-29'\r\n    WHEN age >= 30 AND age < 40 THEN '30-39'\r\n    WHEN age >= 40 AND age < 60 THEN '40-59'\r\n    ELSE '60+'\r\n  END AS age_group,\r\n  COUNT(*) AS count\r\nFROM profile\r\nGROUP BY age_group",
+          "rawSql": "WITH player_playtime AS (\r\n    SELECT\r\n        play_time.player_id\r\n    FROM\r\n        play_time\r\n    WHERE\r\n        play_time.tracker = 'Overall'\r\n        AND play_time.time_spent > '10:00:00'\r\n)\r\nSELECT\r\n    CASE\r\n        WHEN profile.age < 20 THEN 'Under 20'\r\n        WHEN profile.age >= 20 AND profile.age < 30 THEN '20-29'\r\n        WHEN profile.age >= 30 AND profile.age < 40 THEN '30-39'\r\n        WHEN profile.age >= 40 AND profile.age < 60 THEN '40-59'\r\n        ELSE '60+'\r\n    END AS \"Age Group\",\r\n    COUNT(*) AS \"Amount\"\r\nFROM\r\n    profile\r\nJOIN\r\n    preference ON profile.preference_id = preference.preference_id\r\nJOIN\r\n    player_playtime ON preference.user_id = player_playtime.player_id\r\nJOIN\r\n    player ON preference.user_id = player.user_id\r\nWHERE\r\n    $__timeFilter(player.last_seen_time)\r\nGROUP BY\r\n    \"Age Group\"\r\nORDER BY\r\n    \"Amount\" DESC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -3328,12 +3977,12 @@
           "table": "profile"
         }
       ],
-      "type": "piechart"
+      "type": "barchart"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -3343,14 +3992,41 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "fieldMinMax": false,
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -3358,42 +4034,43 @@
         "h": 9,
         "w": 3,
         "x": 9,
-        "y": 33
+        "y": 32
       },
       "id": 56,
       "options": {
-        "displayLabels": [],
+        "barRadius": 0.05,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
+          "showLegend": false
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "/^Count$/",
-          "values": true
-        },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "none",
         "tooltip": {
-          "maxHeight": 600,
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "format": "table",
           "hide": false,
-          "rawSql": "SELECT COUNT(*) AS \"Count\", trait_name AS \"Trait\" FROM trait GROUP BY trait_name ORDER BY COUNT(*) DESC LIMIT 10 ",
+          "rawQuery": true,
+          "rawSql": "WITH player_playtime AS (\n    SELECT\n        play_time.player_id\n    FROM\n        play_time\n    WHERE\n        play_time.tracker = 'Overall'\n        AND play_time.time_spent > '10:00:00'\n)\nSELECT\n    COUNT(*) AS \"Count\",\n    trait.trait_name AS \"Trait\"\nFROM\n    trait\nJOIN\n    profile ON trait.profile_id = profile.profile_id\nJOIN\n    preference ON profile.preference_id = preference.preference_id\nJOIN\n    player_playtime ON preference.user_id = player_playtime.player_id\nJOIN\n    player ON preference.user_id = player.user_id\nWHERE\n    $__timeFilter(player.last_seen_time)\nGROUP BY\n    trait.trait_name\nORDER BY\n    \"Count\" DESC\nLIMIT 10;\n",
           "refId": "A",
           "sql": {
             "columns": [
@@ -3441,126 +4118,12 @@
           "table": "trait"
         }
       ],
-      "type": "piechart"
+      "type": "barchart"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 3,
-        "x": 12,
-        "y": 33
-      },
-      "id": 67,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "values": [
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT \r\n    CASE \r\n        WHEN last_read_rules IS NOT NULL THEN 'Read Rules'\r\n        ELSE 'Used fuckrules'\r\n    END AS read_rules_status,\r\n    COUNT(*) AS player_count\r\nFROM \r\n    player\r\nWHERE \r\n    last_seen_time >= NOW() - INTERVAL '15 days'\r\nGROUP BY \r\n    read_rules_status;\r\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [
-                  {
-                    "name": "last_seen_user_name",
-                    "type": "functionParameter"
-                  }
-                ],
-                "type": "function"
-              },
-              {
-                "parameters": [
-                  {
-                    "name": "first_seen_time",
-                    "type": "functionParameter"
-                  }
-                ],
-                "type": "function"
-              },
-              {
-                "parameters": [
-                  {
-                    "name": "last_read_rules",
-                    "type": "functionParameter"
-                  }
-                ],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "orderBy": {
-              "property": {
-                "name": "last_seen_time",
-                "type": "string"
-              },
-              "type": "property"
-            },
-            "orderByDirection": "ASC"
-          },
-          "table": "player"
-        }
-      ],
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+        "uid": "${DS_LRP_DATABASE}"
       },
       "description": "",
       "fieldConfig": {
@@ -3585,8 +4148,8 @@
       "gridPos": {
         "h": 9,
         "w": 3,
-        "x": 15,
-        "y": 33
+        "x": 12,
+        "y": 32
       },
       "id": 45,
       "options": {
@@ -3594,6 +4157,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [],
           "fields": "/^Unique Players$/",
@@ -3604,16 +4168,17 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "pluginVersion": "11.0.0",
+      "pluginVersion": "11.5.1",
       "targets": [
         {
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+            "uid": "${DS_LRP_DATABASE}"
           },
-          "editorMode": "builder",
+          "editorMode": "code",
           "format": "table",
-          "rawSql": "SELECT COUNT(player_id) AS \"Unique Players\" FROM player ",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(player_id) AS \"Unique Players\" FROM player\nWHERE\n    $__timeFilter(player.last_seen_time) -- Added Grafana time filter",
           "refId": "A",
           "sql": {
             "columns": [
@@ -3642,10 +4207,726 @@
         }
       ],
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "min"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "displayName": "Trust Score",
+          "fieldMinMax": false,
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 15,
+        "y": 32
+      },
+      "id": 81,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  to_char(round(score::numeric, 1), 'FM9999990.0') AS metric,\r\n  count(*)                                 AS value\r\nFROM ipintel_cache\r\nWHERE\r\n  $__timeFilter(\"time\")\r\nGROUP BY\r\n  round(score::numeric, 1)\r\nORDER BY\r\n  round(score::numeric, 1);\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "\"time\"",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "id": "8aab9ba8-0123-4456-b89a-b196c1c62cc3",
+              "type": "group"
+            }
+          },
+          "table": "ipintel_cache"
+        }
+      ],
+      "title": "IPIntel Cache",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 64,
+      "panels": [],
+      "title": "All Time Stats",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_currency"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "displayName",
+                "value": "Goob Coin"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seen_user_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Username"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 42
+      },
+      "id": 70,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "builder",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT last_seen_user_name, server_currency FROM player ORDER BY server_currency DESC LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "last_seen_user_name",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "server_currency",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "server_currency"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            },
+            "orderByDirection": "DESC"
+          },
+          "table": "player"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sum"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total Goob Coins"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 6,
+        "y": 42
+      },
+      "id": 71,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "builder",
+          "format": "table",
+          "rawSql": "SELECT SUM(server_currency) FROM player ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "name": "SUM",
+                "parameters": [
+                  {
+                    "name": "server_currency",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          },
+          "table": "player"
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seen_user_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Username"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time_spent"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Playtime"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 10,
+        "y": 42
+      },
+      "id": 82,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  p.last_seen_user_name,\r\n  pt.time_spent\r\nFROM\r\n  play_time AS pt\r\nINNER JOIN\r\n  player AS p ON pt.player_id = p.user_id\r\nWHERE\r\n  pt.tracker = 'Overall'\r\n  AND p.user_id NOT IN (SELECT user_id FROM admin)\r\n  AND p.last_seen_user_name NOT IN ('ARandomHunter', 'Wyatt_', 'beanman11121', 'FourHead', 'Gruinspace', 'EmmaFaith', 'realDonaldTrump', 'Nravelk', 'Drifin', 'send_fbi', 'deathsquad_enjoyer')\r\nORDER BY\r\n  pt.time_spent DESC\r\nLIMIT 50;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "player_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "time_spent",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "time_spent"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            },
+            "orderByDirection": "DESC",
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8a9aa98b-cdef-4012-b456-719816c274e2",
+                  "properties": {
+                    "field": "tracker",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "Overall"
+                    ],
+                    "valueError": [
+                      null
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "9b9bb88b-0123-4456-b89a-b19816c1d7c7",
+              "type": "group"
+            },
+            "whereString": "tracker = 'Overall'"
+          },
+          "table": "play_time"
+        }
+      ],
+      "title": "Playtime Leaderboard",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${DS_LRP_DATABASE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seen_user_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Username"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time_spent"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Playtime"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 16,
+        "y": 42
+      },
+      "id": 83,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${DS_LRP_DATABASE}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  p.last_seen_user_name,\r\n  pt.time_spent\r\nFROM\r\n  play_time AS pt\r\nINNER JOIN\r\n  player AS p ON pt.player_id = p.user_id\r\nWHERE\r\n  pt.tracker = 'JobPassenger'\r\n  AND p.user_id NOT IN (SELECT user_id FROM admin)\r\n  AND p.last_seen_user_name NOT IN ('ThePuro', 'ARandomHunter', 'Wyatt_', 'beanman11121', 'FourHead', 'Gruinspace', 'EmmaFaith', 'realDonaldTrump', 'Nravelk', 'Drifin', 'send_fbi', 'deathsquad_enjoyer')\r\nORDER BY\r\n  pt.time_spent DESC\r\nLIMIT 5000;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "player_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "time_spent",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "time_spent"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            },
+            "orderByDirection": "DESC",
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8a9aa98b-cdef-4012-b456-719816c274e2",
+                  "properties": {
+                    "field": "tracker",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "Overall"
+                    ],
+                    "valueError": [
+                      null
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "9b9bb88b-0123-4456-b89a-b19816c1d7c7",
+              "type": "group"
+            },
+            "whereString": "tracker = 'Overall'"
+          },
+          "table": "play_time"
+        }
+      ],
+      "title": "Hit List (Tider Leaderboard)",
+      "type": "table"
     }
   ],
   "refresh": "",
-  "schemaVersion": 39,
+  "schemaVersion": 40,
   "tags": [
     "game servers"
   ],
@@ -3655,70 +4936,58 @@
         "current": {},
         "datasource": {
           "type": "grafana-postgresql-datasource",
-          "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+          "uid": "${DS_LRP_DATABASE}"
         },
-        "definition": "SELECT round_id AS __text, round_id AS __value FROM round WHERE round_id >= 1728 ORDER BY start_date desc\n\n",
+        "definition": "SELECT round_id AS __text, round_id AS __value FROM round ORDER BY start_date desc\n\n",
         "description": "\n",
-        "hide": 0,
         "includeAll": false,
         "label": "Round",
-        "multi": false,
         "name": "round_id",
         "options": [],
-        "query": "SELECT round_id AS __text, round_id AS __value FROM round WHERE round_id >= 1728 ORDER BY start_date desc\n\n",
+        "query": "SELECT round_id AS __text, round_id AS __value FROM round ORDER BY start_date desc\n\n",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "current": {},
         "datasource": {
           "type": "grafana-postgresql-datasource",
-          "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+          "uid": "${DS_LRP_DATABASE}"
         },
         "definition": "SELECT COALESCE(MIN(start_date), NOW()) FROM round WHERE start_date > (SELECT start_date FROM round WHERE round_id = ${round_id})\n",
         "hide": 2,
         "includeAll": false,
-        "multi": false,
         "name": "end_date",
         "options": [],
         "query": "SELECT COALESCE(MIN(start_date), NOW()) FROM round WHERE start_date > (SELECT start_date FROM round WHERE round_id = ${round_id})\n",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       },
       {
         "current": {},
         "datasource": {
           "type": "grafana-postgresql-datasource",
-          "uid": "${DS_GRAFANA-POSTGRESQL-DATASOURCE}"
+          "uid": "${DS_LRP_DATABASE}"
         },
         "definition": "SELECT start_date FROM round WHERE round_id = ${round_id}",
         "hide": 2,
         "includeAll": false,
-        "multi": false,
         "name": "start_date",
         "options": [],
         "query": "SELECT start_date FROM round WHERE round_id = ${round_id}",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
-  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {
-    "hidden": false,
     "refresh_intervals": [
       "10s",
       "30s",
@@ -3732,8 +5001,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "Goob server",
+  "title": "Goob LRP",
   "uid": "K0LTdKmMk",
-  "version": 43,
+  "version": 18,
   "weekStart": ""
 }
